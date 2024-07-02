@@ -1,0 +1,37 @@
+schemaVersion: 2.1.0
+metadata:
+  name: voting-app-py
+components:
+  - name: python
+    container:
+      image: registry.redhat.io/devspaces/udi-rhel8:3.4
+      volumeMounts:
+        - name: venv
+          path: /home/user/.venv
+      memoryLimit: 2G
+      mountSources: true
+      env:
+        - value: new-redis.voting-app-demo.svc.cluster.local
+          name: REDIS_HOST
+        - value: admin
+          name: REDIS_PASSWORD
+  - name: venv
+    volume:
+      size: 1G
+commands:
+  - id: pipinsall
+    exec:
+      label: "pip install requirements"
+      component: python
+      workingDir: ${PROJECTS_ROOT}/voting-app-py
+      commandLine: python -m venv .venv && . .venv/bin/activate && python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+      group:
+        kind: run
+  - id: run
+    exec:
+      label: "Run the application"
+      component: python
+      workingDir: ${PROJECTS_ROOT}/voting-app-py
+      commandLine: python -m venv .venv && . .venv/bin/activate && python app.py
+      group:
+        kind: run
